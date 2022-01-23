@@ -19,10 +19,12 @@ export default StyleSheet.create({
     width: 200,
     marginLeft: "auto",
     marginRight: "auto",
+    marginBottom: 150
   },
   title: {
     marginLeft: "auto",
     marginRight: "auto",
+    marginTop: 200,
     fontSize: 35
   },
   input: {
@@ -30,6 +32,9 @@ export default StyleSheet.create({
     marginLeft: "auto",
     marginRight: "auto",
     width: 200,
-    marginBottom: 200
+  },
+  background: {
+    backgroundColor: "#fff",
+    height: 400
   }
 });

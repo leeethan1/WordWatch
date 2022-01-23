@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Avatar, Button, Card, Title, Paragraph, TextInput, Dialog } from 'react-native-paper';
+import { Avatar, Button, Card, Title, Paragraph, TextInput, Dialog, Portal, Modal } from 'react-native-paper';
 import { StyleSheet, Text, View } from 'react-native';
 import { Audio } from 'expo-av';
 import S3FileUpload from 'react-s3';
@@ -9,6 +9,7 @@ import {
   S3Client,
   CreateBucketCommand,
   PutObjectCommand,
+  GetObjectCommand,
   DeleteBucketCommand,
   GetBucketPolicyCommand,
 } from "@aws-sdk/client-s3";
@@ -30,6 +31,7 @@ export default function Content() {
   const [stopwatchReset, setStopwatchReset] = useState(false);
   const [visible, setVisible] = useState(false);
   const [input, setInput] = useState("");
+  const [curr, setCurr] = useState(0);
 
   const bucketName = "ladsjfklds32847238";
   const region = "us-east-1";
@@ -53,6 +55,7 @@ export default function Content() {
   const uploadToBucket = async (uri) => {
     try {
       let time = new Date().getTime();
+      setCurr(time);
       let data = await readFile(uri);
       console.log(data);
       const file = {
@@ -66,6 +69,30 @@ export default function Content() {
       console.log(e);
     }
   };
+
+  const fetchFromBucket = async () => {
+    // let data = await client.send(new PutObjectCommand({Bucket: 'word-watch-output',
+    //   Key: "WWTranscribeJob" + time_val + ".json"}));
+    try {
+      function downloadBlob(blob, name = `test.csv`) {
+          // Convert your blob into a Blob URL (a special url that points to an object in the browser's memory)
+          const blobUrl = URL.createObjectURL(blob);
+          // Create a link element
+
+      }
+      console.log('fetching');
+      let data = await client.send(new GetObjectCommand({ Bucket: 'word-watch-output', Key: "WWTranscribeJob1642913270820.json"}));
+      let csvBlob = new Blob([data.Body.toString()], {
+        type: 'text/csv;charset=utf-8;',
+      });
+      downloadBlob(csvBlob, `test`);
+      console.log(JSON.stringify(data));
+    }
+    catch (e) {
+      console.log(e);
+    }
+  };
+
 
   async function readFile(uri) {
     let data = await FileSystem.readAsStringAsync(uri, {encoding: FileSystem.EncodingType.Base64});
@@ -99,6 +126,7 @@ export default function Content() {
     }
     else {
       setVisible(true);
+      // fetchFromBucket();
     }
   }
 
@@ -161,15 +189,22 @@ export default function Content() {
   return (
     <Card style={Styles.card}>
       <Text style={Styles.title}>WordWatch</Text>
-      <Dialog visible={visible} onDismiss={() => setVisible(false)}>
-            <Dialog.Title>Alert</Dialog.Title>
-            <Dialog.Content>
-              <Paragraph>Please enter input</Paragraph>
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button onPress={() => setVisible(false)}>Done</Button>
-            </Dialog.Actions>
-      </Dialog>
+      <Portal>
+        <Modal visible={visible} onDismiss={() => setVisible(false)}>
+          <View style={Styles.background}>
+            <Text style={Styles.title}>Please enter word</Text>
+          </View>
+        </Modal>
+        {/* <Dialog visible={visible} onDismiss={() => setVisible(false)}>
+              <Dialog.Title>Alert</Dialog.Title>
+              <Dialog.Content>
+                <Paragraph>Please enter input</Paragraph>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={() => setVisible(false)}>Done</Button>
+              </Dialog.Actions>
+        </Dialog> */}
+      </Portal>
       <TextInput
         label="Word to find..."
         value={input}
@@ -195,7 +230,7 @@ const options = {
     marginLeft: 'auto',
     marginRight: 'auto',
     marginBottom: 20,
-    marginTop: 250
+    marginTop: 100
   },
   text: {
     fontSize: 30,
