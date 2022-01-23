@@ -10,20 +10,24 @@ import {
   CreateBucketCommand,
   PutObjectCommand,
   DeleteBucketCommand,
+  GetBucketPolicyCommand,
 } from "@aws-sdk/client-s3";
 
+import { Stopwatch, Timer } from 'react-native-stopwatch-timer';
 import { CognitoIdentityClient } from "@aws-sdk/client-cognito-identity";
 import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
 import "react-native-get-random-values";
 import "react-native-url-polyfill/auto";
 
-global.Buffer = global.Buffer || require('buffer').Buffer
+import * as FileSystem from 'expo-file-system';
+
+global.Buffer = global.Buffer || require('buffer').Buffer;
 
 export default function Content() {
   const [recording, setRecording] = useState();
   const [isRecording, setIsRecording] = useState(false);
-  const [recordTime, setRecordTime] = useState('00:00:00');
-  // const [recordSecs, setRecordSecs] = useState(0);
+  const [stopwatchStart, setStopwatchStart] = useState(false);
+  const [stopwatchReset, setStopwatchReset] = useState(false);
 
   const bucketName = "ladsjfklds32847238";
   const region = "us-east-1";
@@ -46,10 +50,13 @@ export default function Content() {
 
   const uploadToBucket = async (uri) => {
     try {
+      let time = new Date().getTime();
+      let data = await readFile(uri);
+      console.log(data);
       const file = {
         Bucket: "word-watch-bucket",
-        Key: "ethan.m4a",
-        Body: uri
+        Key: `${time}.m4a`,
+        Body: data
       }
       await client.send(new PutObjectCommand(file));
       console.log("lets goo");
@@ -57,6 +64,13 @@ export default function Content() {
       console.log(e);
     }
   };
+
+  async function readFile(uri) {
+    let data = await FileSystem.readAsStringAsync(uri, {encoding: FileSystem.EncodingType.Base64});
+    console.log(uri);
+    // console.log(data);
+    return data;
+  }
 
   async function startRecording() {
     try {
@@ -72,6 +86,9 @@ export default function Content() {
       );
       setRecording(recording);
       console.log('Recording started');
+      setStopwatchReset(true);
+      setStopwatchReset(false);
+      setStopwatchStart(true);
       setIsRecording(true);
     } catch (err) {
       console.error('Failed to start recording', err);
@@ -80,6 +97,7 @@ export default function Content() {
 
   async function stopRecording() {
     console.log('Stopping recording..');
+    setStopwatchStart(false);
     setRecording(undefined);
     await recording.stopAndUnloadAsync();
     const uri = recording.getURI(); 
@@ -135,8 +153,29 @@ export default function Content() {
   }
   return (
     <Card style={Styles.card}>
-      <Title style={Styles.title}>{recordTime}</Title>
+      <Title style={Styles.title}>WordWatch</Title>
+      <Stopwatch laps msecs start={stopwatchStart}
+        reset={stopwatchReset}
+        options={options}
+       />
       {displayButton()}
     </Card>
   )
 }
+
+const options = {
+  container: {
+    backgroundColor: '#000',
+    padding: 5,
+    borderRadius: 5,
+    width: 235,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    marginBottom: 10
+  },
+  text: {
+    fontSize: 30,
+    color: '#FFF',
+    marginLeft: 7,
+  }
+};
