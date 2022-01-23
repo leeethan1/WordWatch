@@ -8,6 +8,7 @@ import { RNS3 } from 'react-native-aws3';
 import {
   S3Client,
   CreateBucketCommand,
+  PutObjectCommand,
   DeleteBucketCommand,
 } from "@aws-sdk/client-s3";
 
@@ -34,10 +35,24 @@ export default function Content() {
     }),
   });
 
-  const createBucket = async () => {
+  // const createBucket = async () => {
+  //   try {
+  //     await client.send(new CreateBucketCommand({ Bucket: bucketName }));
+  //     console.log(`Bucket "${bucketName}" created.`);
+  //   } catch (e) {
+  //     console.log(e);
+  //   }
+  // };
+
+  const uploadToBucket = async (uri) => {
     try {
-      await client.send(new CreateBucketCommand({ Bucket: bucketName }));
-      console.log(`Bucket "${bucketName}" created.`);
+      const file = {
+        Bucket: "word-watch-bucket",
+        Key: "ethan.m4a",
+        Body: uri
+      }
+      await client.send(new PutObjectCommand(file));
+      console.log("lets goo");
     } catch (e) {
       console.log(e);
     }
@@ -69,55 +84,38 @@ export default function Content() {
     await recording.stopAndUnloadAsync();
     const uri = recording.getURI(); 
     console.log('Recording stopped and stored at', uri);
+    console.log("test");
     // uploadDocument(uri);
-    createBucket();
+    uploadToBucket(uri);
+    // createBucket();
     setIsRecording(false);
   }
 
-  async function uploadDocument(uri) {
-    const file = {
-      uri: uri,
-      name: "sound.m4a",
-      type: "audio/m4a"
-    }
-    const options = {
-      bucket: 'word-watch-bucket',
-      region: 'us-east-1',
-      accessKey: 'AKIAVILI6HXNPLU5BXYO',
-      secretKey: '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',
-      successActionStatus: 201
-    }
+  // async function uploadDocument(uri) {
+  //   const file = {
+  //     uri: uri,
+  //     name: "ethan.m4a",
+  //     type: "audio/mp4"
+  //   }
+  //   const options = {
+  //     bucket: 'word-watch-bucket',
+  //     region: 'us-east-1',
+  //     accessKey: 'AKIAVILI6HXNPLU5BXYO',
+  //     secretKey: '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',
+  //     successActionStatus: 201
+  //   }
      
-    RNS3.put(file, options).then(response => {
-      if (response.status !== 201) {
-        console.log('status code: ', response.status);
-        console.log(response);
-      }
-      else {
-        console.log(response.body);
-      }
+  //   RNS3.put(file, options).then(response => {
+  //     if (response.status !== 201) {
+  //       console.log('status code: ', response.status);
+  //       console.log(response);
+  //     }
+  //     else {
+  //       console.log(response.body);
+  //     }
     
-    });
-
-    // const file = {
-    //   uri: uri,
-    //   name: "sound.m4a",
-    //   type: "m4a"
-    // }
-    // console.log(file);
-    // const config = {
-    //   bucketName: 'word-watch-bucket',
-    //   region: 'us-east-1',
-    //   accessKeyId: 'AKIAVILI6HXNPLU5BXYO',
-    //   secretAccessKey: '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'
-    // }
-
-    // S3FileUpload
-    // .uploadFile(file, config)
-    // .then(response => console.log(response))
-    // .catch(err => console.error(err));
-    // console.log("finished");
-  }
+  //   });
+  // }
 
   function displayButton() {
     if (!isRecording) {
