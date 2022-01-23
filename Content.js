@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Avatar, Button, Card, Title, Paragraph } from 'react-native-paper';
+import { Avatar, Button, Card, Title, Paragraph, TextInput, Dialog } from 'react-native-paper';
 import { StyleSheet, Text, View } from 'react-native';
 import { Audio } from 'expo-av';
 import S3FileUpload from 'react-s3';
@@ -28,6 +28,8 @@ export default function Content() {
   const [isRecording, setIsRecording] = useState(false);
   const [stopwatchStart, setStopwatchStart] = useState(false);
   const [stopwatchReset, setStopwatchReset] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [input, setInput] = useState("");
 
   const bucketName = "ladsjfklds32847238";
   const region = "us-east-1";
@@ -73,25 +75,30 @@ export default function Content() {
   }
 
   async function startRecording() {
-    try {
-      console.log('Requesting permissions..');
-      await Audio.requestPermissionsAsync();
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      }); 
-      console.log('Starting recording..');
-      const { recording } = await Audio.Recording.createAsync(
-         Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
-      );
-      setRecording(recording);
-      console.log('Recording started');
-      setStopwatchReset(true);
-      setStopwatchReset(false);
-      setStopwatchStart(true);
-      setIsRecording(true);
-    } catch (err) {
-      console.error('Failed to start recording', err);
+    if (input !== "") {
+      try {
+        console.log('Requesting permissions..');
+        await Audio.requestPermissionsAsync();
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+        }); 
+        console.log('Starting recording..');
+        const { recording } = await Audio.Recording.createAsync(
+          Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
+        );
+        setRecording(recording);
+        console.log('Recording started');
+        setStopwatchReset(true);
+        setStopwatchReset(false);
+        setStopwatchStart(true);
+        setIsRecording(true);
+      } catch (err) {
+        console.error('Failed to start recording', err);
+      }
+    }
+    else {
+      setVisible(true);
     }
   }
 
@@ -153,7 +160,23 @@ export default function Content() {
   }
   return (
     <Card style={Styles.card}>
-      <Title style={Styles.title}>WordWatch</Title>
+      <Text style={Styles.title}>WordWatch</Text>
+      <Dialog visible={visible} onDismiss={() => setVisible(false)}>
+            <Dialog.Title>Alert</Dialog.Title>
+            <Dialog.Content>
+              <Paragraph>Please enter input</Paragraph>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button onPress={() => setVisible(false)}>Done</Button>
+            </Dialog.Actions>
+      </Dialog>
+      <TextInput
+        label="Word to find..."
+        value={input}
+        onChangeText={text => setInput(text)}
+        mode='outlined'
+        style={Styles.input}
+      />
       <Stopwatch laps msecs start={stopwatchStart}
         reset={stopwatchReset}
         options={options}
@@ -171,7 +194,8 @@ const options = {
     width: 235,
     marginLeft: 'auto',
     marginRight: 'auto',
-    marginBottom: 10
+    marginBottom: 20,
+    marginTop: 250
   },
   text: {
     fontSize: 30,

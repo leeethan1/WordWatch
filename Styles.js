@@ -18,10 +18,18 @@ export default StyleSheet.create({
   button: {
     width: 200,
     marginLeft: "auto",
-    marginRight: "auto" 
+    marginRight: "auto",
   },
   title: {
     marginLeft: "auto",
     marginRight: "auto",
+    fontSize: 35
+  },
+  input: {
+    marginTop: 10,
+    marginLeft: "auto",
+    marginRight: "auto",
+    width: 200,
+    marginBottom: 200
   }
 });
