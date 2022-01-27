@@ -154,7 +154,7 @@ export default function Content() {
   //     bucket: 'word-watch-bucket',
   //     region: 'us-east-1',
   //     accessKey: 'AKIAVILI6HXNPLU5BXYO',
-  //     secretKey: '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',
+  //     secretKey: '{secret-key}',
   //     successActionStatus: 201
   //   }
      
